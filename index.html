@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GevStack - Daily Mission Goals</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ensure full height and enable global scrolling */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%; /* Ensure full height for both body and html */
+            overflow-y: auto; /* Enable scrolling when needed */
+            display: flex;
+            flex-direction: column; /* Ensure elements stack vertically */
+        }
+
+        .container {
+            flex: 1; /* Allow container to expand to fill available space */
+            padding: 20px;
+            overflow-y: auto; /* Scroll the container content when it overflows */
+        }
+
+        .checkboxes {
+            margin-top: 20px; /* Top margin for the goal list */
+            margin-bottom: 20px; /* Bottom margin for the goal list */
+        }
+
+        .checkbox-wrapper {
+            margin: 10px 0;
+        }
+
+        .input-field {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+        }
+
+        .submit-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .delete-btn {
+            background-color: rgba(78, 78, 78, 0.11);
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(78, 78, 78, 0.11);
+        }
+    </style>
+</head>
+<body>
+    <br>
+    <div class="container">
+        <h2>Daily Mission Goals</h2>
+        <input type="text" id="goalInput" placeholder="Enter your goal..." class="input-field">
+        <button onclick="addGoal()" class="submit-btn">Submit</button>
+        
+        <div class="checkboxes" id="goalList">
+            <!-- Default goals -->
+            <div class="checkbox-wrapper">
+                <input id="02-11" type="checkbox" name="r" value="2">
+                <label for="02-11">Sherni ke sath chill ❤︎</label>
+                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            </div>
+    
+            <div class="checkbox-wrapper">
+                <input id="03-11" type="checkbox" name="r" value="3">
+                <label for="03-11">Gym 🦾</label>
+                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            </div>
+    
+            <div class="checkbox-wrapper">
+                <input id="04-11" type="checkbox" name="r" value="4">
+                <label for="04-11"><p>Padhayi <span class="cross">✘</span> ye kya hota hai</p></label>
+                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            </div>
+    
+            <div class="checkbox-wrapper">
+                <input id="05-11" type="checkbox" name="r" value="5">
+                <label for="05-11">Trip to Thailand ✈</label>
+                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            </div>
+    
+            <div class="checkbox-wrapper">
+                <input id="06-11" type="checkbox" name="r" value="6">
+                <label for="06-11">Paise kamane ke Sapne 💸</label>
+                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <script>
+        // Load saved goals from localStorage when the page loads
+        window.onload = function() {
+            loadGoals();
+        };
+
+        function addGoal() {
+            var goalText = document.getElementById("goalInput").value;
+            if (goalText.trim() !== "") {
+                var goalList = document.getElementById("goalList");
+                var newId = "goal-" + new Date().getTime();
+                var div = document.createElement("div");
+                div.className = "checkbox-wrapper";
+                div.innerHTML = `
+                    <input id="${newId}" type="checkbox" name="r" value="${newId}">
+                    <label for="${newId}">${goalText}</label>
+                    <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+                `;
+                goalList.appendChild(div);
+                document.getElementById("goalInput").value = ""; // Clear the input field
+                document.getElementById("goalInput").focus(); // Reset focus to input field
+
+                // Save the new goal to localStorage
+                saveGoals();
+            }
+        }
+
+        function deleteGoal(button) {
+            // Confirm before deleting the goal
+            var confirmDelete = confirm("Are you sure you want to delete this goal?");
+            if (confirmDelete) {
+                button.parentElement.remove();
+                // Update localStorage after a goal is deleted
+                saveGoals();
+            }
+        }
+
+        function saveGoals() {
+            var goalList = document.getElementById("goalList");
+            var goals = [];
+            var goalItems = goalList.getElementsByClassName("checkbox-wrapper");
+
+            for (var i = 0; i < goalItems.length; i++) {
+                var goalText = goalItems[i].getElementsByTagName("label")[0].innerText;
+                var isChecked = goalItems[i].getElementsByTagName("input")[0].checked;
+                goals.push({ text: goalText, checked: isChecked }); // Save text and checkbox state
+            }
+
+            // Save the array of goals as a string in localStorage
+            localStorage.setItem("goals", JSON.stringify(goals));
+        }
+
+        function loadGoals() {
+            var savedGoals = localStorage.getItem("goals");
+
+            if (savedGoals) {
+                var goals = JSON.parse(savedGoals);
+                var goalList = document.getElementById("goalList");
+
+                goals.forEach(function(goal) {
+                    var newId = "goal-" + new Date().getTime(); // Generate new unique ID
+                    var div = document.createElement("div");
+                    div.className = "checkbox-wrapper";
+                    div.innerHTML = `
+                        <input id="${newId}" type="checkbox" name="r" value="${newId}" ${goal.checked ? 'checked' : ''}>
+                        <label for="${newId}">${goal.text}</label>
+                        <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+                    `;
+                    goalList.appendChild(div);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

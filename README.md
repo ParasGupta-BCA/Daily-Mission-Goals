@@ -17,5 +17,6 @@ Here is a screenshot of the app interface:
 To get started with the project, follow these steps:
 
 1. Clone this repository:
+   
    ```bash
    git clone https://github.com/parasgupta-bca/Daily-Mission-Goals.git

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paras Gupta - Daily Mission Goals</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Ensure full height and enable global scrolling */
         html, body {
@@ -62,118 +63,338 @@
     </style>
 </head>
 <body>
-    <br>
     <div class="container">
-        <h2>Daily Mission Goals</h2>
-        <input type="text" id="goalInput" placeholder="Enter your goal..." class="input-field">
-        <button onclick="addGoal()" class="submit-btn">Submit</button>
+        <div class="header">
+            <div class="greeting" id="greeting"></div>
+            <div class="avatar" id="avatar" tooltip="Click to change avatar">🦸‍♂️</div>
+            <button class="theme-toggle" onclick="toggleTheme()" tooltip="Toggle light/dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="motivation" id="motivationQuote"></div>
+            <div class="streak" id="streakCounter">🔥 Streak: 0 days</div>
+            <h2 style="margin-bottom: 0;">Daily Mission Goals</h2>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search goals...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <form class="goal-form" onsubmit="addGoal(event)">
+            <div class="input-group">
+                <input type="text" id="goalInput" class="input-field" placeholder="Enter your goal... ✨" required>
+                <input type="date" id="dueDate" class="input-field">
+            </div>
+            <select id="goalCategory" class="goal-category">
+                <option value="">Select Category</option>
+                <option value="personal">Personal</option>
+                <option value="work">Work</option>
+                <option value="health">Health</option>
+                <option value="education">Education</option>
+                <option value="other">Other</option>
+            </select>
+            <select id="goalPriority" class="goal-priority">
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select>
+            <button type="submit" class="submit-btn">Add Goal 🚀</button>
+        </form>
         
         <div class="checkboxes" id="goalList">
-            <!-- Default goals -->
-            <div class="checkbox-wrapper">
-                <input id="02-11" type="checkbox" name="r" value="2">
-                <label for="02-11">Sherni ke sath chill ❤︎</label>
-                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            <!-- Goals will be added here dynamically -->
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalGoals">0</div>
+                <div class="stat-label">Total Goals</div>
             </div>
-    
-            <div class="checkbox-wrapper">
-                <input id="03-11" type="checkbox" name="r" value="3">
-                <label for="03-11">Gym 🦾</label>
-                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            <div class="stat-item">
+                <div class="stat-value" id="completedGoals">0</div>
+                <div class="stat-label">Completed</div>
             </div>
-    
-            <div class="checkbox-wrapper">
-                <input id="04-11" type="checkbox" name="r" value="4">
-                <label for="04-11"><p>Padhayi <span class="cross">✘</span> ye kya hota hai</p></label>
-                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
-            </div>
-    
-            <div class="checkbox-wrapper">
-                <input id="05-11" type="checkbox" name="r" value="5">
-                <label for="05-11">Trip to Thailand ✈</label>
-                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
-            </div>
-    
-            <div class="checkbox-wrapper">
-                <input id="06-11" type="checkbox" name="r" value="6">
-                <label for="06-11">Paise kamane ke Sapne 💸</label>
-                <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+            <div class="stat-item">
+                <div class="stat-value" id="pendingGoals">0</div>
+                <div class="stat-label">Pending</div>
             </div>
         </div>
     </div>
-    <br>
 
     <script>
-        // Load saved goals from localStorage when the page loads
+        // --- Gen-Z Features ---
+        const quotes = [
+            "Dream big, hustle harder! 💪",
+            "You got this! 🚀",
+            "Stay vibin', keep grindin' ✨",
+            "Progress, not perfection! 🌱",
+            "Make today legendary! 🦄",
+            "Slay your goals! 👑",
+            "Every day is a fresh start! 🌞",
+            "Keep it 100! 💯",
+            "Do it for your future self! 🔥"
+        ];
+        function setRandomQuote() {
+            const idx = Math.floor(Math.random() * quotes.length);
+            document.getElementById('motivationQuote').textContent = quotes[idx];
+            localStorage.setItem('motivationQuote', quotes[idx]);
+        }
+        // Show the same quote for the day
+        if (!localStorage.getItem('motivationQuoteDate') || localStorage.getItem('motivationQuoteDate') !== new Date().toDateString()) {
+            setRandomQuote();
+            localStorage.setItem('motivationQuoteDate', new Date().toDateString());
+        } else {
+            document.getElementById('motivationQuote').textContent = localStorage.getItem('motivationQuote');
+        }
+
+        // Avatar (random emoji, persistent)
+        const avatarEmojis = ['🦸‍♂️','🦸‍♀️','🦄','🐼','🐯','🦊','🐸','🐧','🦥','🦋','🦖','🦕','🦩','🦚','🦜','🦔','🦦','🦙','🦒','🦓','🦘','🦡','🦃','🦢','🦩','🦦','🦥','🦦','🦦','🦦'];
+        function setRandomAvatar() {
+            const idx = Math.floor(Math.random() * avatarEmojis.length);
+            document.getElementById('avatar').textContent = avatarEmojis[idx];
+            localStorage.setItem('avatar', avatarEmojis[idx]);
+        }
+        if (!localStorage.getItem('avatar')) setRandomAvatar();
+        document.getElementById('avatar').textContent = localStorage.getItem('avatar');
+        document.getElementById('avatar').onclick = function() { setRandomAvatar(); };
+
+        // --- Theme Toggle ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const theme = html.getAttribute('data-theme');
+            const newTheme = theme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            const themeIcon = document.querySelector('.theme-toggle i');
+            themeIcon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle i').className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+
+        // Greeting with user name
+        function setGreeting() {
+            let name = localStorage.getItem('userName');
+            if (!name) {
+                name = prompt("What's your name?");
+                if (name) localStorage.setItem('userName', name);
+            }
+            document.getElementById('greeting').textContent = name ? `Hey, ${name} 👋` : '';
+        }
+        setGreeting();
+
+        // Animate streak counter
+        function animateStreak() {
+            const streakEl = document.getElementById('streakCounter');
+            streakEl.style.transition = 'transform 0.3s';
+            streakEl.style.transform = 'scale(1.2)';
+            setTimeout(() => { streakEl.style.transform = 'scale(1)'; }, 300);
+        }
+
+        // Confetti/emoji pop when all goals completed
+        function showConfettiPop() {
+            const pop = document.createElement('div');
+            pop.className = 'confetti-pop';
+            pop.textContent = '🎉';
+            document.body.appendChild(pop);
+            setTimeout(() => { pop.remove(); }, 1200);
+        }
+
+        // --- Streak Counter ---
+        function updateStreak() {
+            let streak = parseInt(localStorage.getItem('streak') || '0');
+            let lastDay = localStorage.getItem('lastStreakDay');
+            const today = new Date().toDateString();
+            if (lastDay !== today) {
+                // If completed goals today, increment streak
+                const completed = document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]:checked').length;
+                if (completed > 0) {
+                    if (lastDay && (new Date(today) - new Date(lastDay) === 86400000)) {
+                        streak += 1;
+                    } else {
+                        streak = 1;
+                    }
+                    localStorage.setItem('streak', streak);
+                    localStorage.setItem('lastStreakDay', today);
+                    animateStreak();
+                }
+            }
+            document.getElementById('streakCounter').textContent = `🔥 Streak: ${streak} day${streak === 1 ? '' : 's'}`;
+        }
+
+        // --- Goals Logic ---
         window.onload = function() {
             loadGoals();
+            updateStats();
+            updateStreak();
         };
-
-        function addGoal() {
-            var goalText = document.getElementById("goalInput").value;
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const goals = document.querySelectorAll('.checkbox-wrapper');
+            goals.forEach(goal => {
+                const text = goal.querySelector('.goal-text').textContent.toLowerCase();
+                const category = goal.querySelector('.goal-category-tag')?.textContent.toLowerCase() || '';
+                const shouldShow = text.includes(searchTerm) || category.includes(searchTerm);
+                goal.style.display = shouldShow ? 'flex' : 'none';
+            });
+        });
+        function addGoal(event) {
+            event.preventDefault();
+            const goalText = document.getElementById("goalInput").value;
+            const dueDate = document.getElementById("dueDate").value;
+            const category = document.getElementById("goalCategory").value;
+            const priority = document.getElementById("goalPriority").value;
             if (goalText.trim() !== "") {
-                var goalList = document.getElementById("goalList");
-                var newId = "goal-" + new Date().getTime();
-                var div = document.createElement("div");
-                div.className = "checkbox-wrapper";
+                const goalList = document.getElementById("goalList");
+                const newId = "goal-" + new Date().getTime();
+                const div = document.createElement("div");
+                div.className = "checkbox-wrapper pop";
                 div.innerHTML = `
-                    <input id="${newId}" type="checkbox" name="r" value="${newId}">
-                    <label for="${newId}">${goalText}</label>
-                    <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+                    <input id="${newId}" type="checkbox" name="r" value="${newId}" onchange="updateStats();updateStreak();">
+                    <div class="goal-content">
+                        <div class="goal-text">${goalText}</div>
+                        <div class="goal-meta">
+                            ${category ? `<span class=\"goal-category-tag\">${category}</span>` : ''}
+                            <span class=\"goal-priority-tag priority-${priority}\">${priority}</span>
+                            ${dueDate ? `<span class=\"goal-due-date\"><i class=\"far fa-calendar\"></i> ${dueDate}</span>` : ''}
+                        </div>
+                    </div>
+                    <button onclick="editGoal(this)" class="delete-btn" tooltip="Edit goal"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteGoal(this)" class="delete-btn" tooltip="Delete goal"><i class="fas fa-trash"></i></button>
                 `;
                 goalList.appendChild(div);
-                document.getElementById("goalInput").value = ""; // Clear the input field
-                document.getElementById("goalInput").focus(); // Reset focus to input field
-
-                // Save the new goal to localStorage
+                setTimeout(() => div.classList.remove('pop'), 600);
+                document.getElementById("goalInput").value = "";
+                document.getElementById("dueDate").value = "";
+                document.getElementById("goalCategory").value = "";
+                document.getElementById("goalPriority").value = "low";
                 saveGoals();
+                updateStats();
+                updateStreak();
             }
         }
-
+        function editGoal(button) {
+            const wrapper = button.parentElement;
+            const goalText = wrapper.querySelector('.goal-text').textContent;
+            const dueDate = wrapper.querySelector('.goal-due-date')?.textContent?.replace(/[^\d-]/g, '') || '';
+            const category = wrapper.querySelector('.goal-category-tag')?.textContent || '';
+            const priority = wrapper.querySelector('.goal-priority-tag')?.textContent || 'low';
+            wrapper.innerHTML = `
+                <input type="checkbox" style="visibility:hidden;">
+                <div class="goal-content">
+                    <input type="text" class="input-field" value="${goalText}" style="margin-bottom:4px;">
+                    <div class="goal-meta">
+                        <select class="goal-category">
+                            <option value="">Select Category</option>
+                            <option value="personal" ${category==='personal'?'selected':''}>Personal</option>
+                            <option value="work" ${category==='work'?'selected':''}>Work</option>
+                            <option value="health" ${category==='health'?'selected':''}>Health</option>
+                            <option value="education" ${category==='education'?'selected':''}>Education</option>
+                            <option value="other" ${category==='other'?'selected':''}>Other</option>
+                        </select>
+                        <select class="goal-priority">
+                            <option value="low" ${priority==='low'?'selected':''}>Low Priority</option>
+                            <option value="medium" ${priority==='medium'?'selected':''}>Medium Priority</option>
+                            <option value="high" ${priority==='high'?'selected':''}>High Priority</option>
+                        </select>
+                        <input type="date" class="input-field" value="${dueDate}">
+                    </div>
+                </div>
+                <button onclick="saveEditGoal(this)" class="delete-btn" tooltip="Save"><i class="fas fa-check"></i></button>
+                <button onclick="loadGoals();updateStats();" class="delete-btn" tooltip="Cancel"><i class="fas fa-times"></i></button>
+            `;
+        }
+        function saveEditGoal(button) {
+            const wrapper = button.parentElement;
+            const text = wrapper.querySelector('input[type="text"]').value;
+            const category = wrapper.querySelector('.goal-category').value;
+            const priority = wrapper.querySelector('.goal-priority').value;
+            const dueDate = wrapper.querySelector('input[type="date"]').value;
+            // Replace with new content
+            wrapper.innerHTML = `
+                <input type="checkbox" onchange="updateStats();updateStreak();">
+                <div class="goal-content">
+                    <div class="goal-text">${text}</div>
+                    <div class="goal-meta">
+                        ${category ? `<span class=\"goal-category-tag\">${category}</span>` : ''}
+                        <span class=\"goal-priority-tag priority-${priority}\">${priority}</span>
+                        ${dueDate ? `<span class=\"goal-due-date\"><i class=\"far fa-calendar\"></i> ${dueDate}</span>` : ''}
+                    </div>
+                </div>
+                <button onclick="editGoal(this)" class="delete-btn" tooltip="Edit goal"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteGoal(this)" class="delete-btn" tooltip="Delete goal"><i class="fas fa-trash"></i></button>
+            `;
+            saveGoals();
+            updateStats();
+            updateStreak();
+        }
         function deleteGoal(button) {
-            // Confirm before deleting the goal
-            var confirmDelete = confirm("Are you sure you want to delete this goal?");
-            if (confirmDelete) {
+            if (confirm("Are you sure you want to delete this goal?")) {
                 button.parentElement.remove();
-                // Update localStorage after a goal is deleted
                 saveGoals();
+                updateStats();
+                updateStreak();
             }
         }
-
         function saveGoals() {
-            var goalList = document.getElementById("goalList");
-            var goals = [];
-            var goalItems = goalList.getElementsByClassName("checkbox-wrapper");
-
-            for (var i = 0; i < goalItems.length; i++) {
-                var goalText = goalItems[i].getElementsByTagName("label")[0].innerText;
-                var isChecked = goalItems[i].getElementsByTagName("input")[0].checked;
-                goals.push({ text: goalText, checked: isChecked }); // Save text and checkbox state
+            const goalList = document.getElementById("goalList");
+            const goals = [];
+            const goalItems = goalList.getElementsByClassName("checkbox-wrapper");
+            for (let i = 0; i < goalItems.length; i++) {
+                const goal = {
+                    text: goalItems[i].querySelector('.goal-text').textContent,
+                    checked: goalItems[i].querySelector('input[type="checkbox"]').checked,
+                    category: goalItems[i].querySelector('.goal-category-tag')?.textContent || '',
+                    priority: goalItems[i].querySelector('.goal-priority-tag')?.textContent || 'low',
+                    dueDate: goalItems[i].querySelector('.goal-due-date')?.textContent || ''
+                };
+                goals.push(goal);
             }
-
-            // Save the array of goals as a string in localStorage
             localStorage.setItem("goals", JSON.stringify(goals));
         }
-
         function loadGoals() {
-            var savedGoals = localStorage.getItem("goals");
-
+            const savedGoals = localStorage.getItem("goals");
+            const goalList = document.getElementById("goalList");
+            goalList.innerHTML = '';
             if (savedGoals) {
-                var goals = JSON.parse(savedGoals);
-                var goalList = document.getElementById("goalList");
-
+                const goals = JSON.parse(savedGoals);
                 goals.forEach(function(goal) {
-                    var newId = "goal-" + new Date().getTime(); // Generate new unique ID
-                    var div = document.createElement("div");
+                    const newId = "goal-" + new Date().getTime() + Math.floor(Math.random()*1000);
+                    const div = document.createElement("div");
                     div.className = "checkbox-wrapper";
                     div.innerHTML = `
-                        <input id="${newId}" type="checkbox" name="r" value="${newId}" ${goal.checked ? 'checked' : ''}>
-                        <label for="${newId}">${goal.text}</label>
-                        <button onclick="deleteGoal(this)" class="delete-btn">❌</button>
+                        <input id="${newId}" type="checkbox" name="r" value="${newId}" ${goal.checked ? 'checked' : ''} onchange="updateStats();updateStreak();">
+                        <div class="goal-content">
+                            <div class="goal-text">${goal.text}</div>
+                            <div class="goal-meta">
+                                ${goal.category ? `<span class=\"goal-category-tag\">${goal.category}</span>` : ''}
+                                <span class=\"goal-priority-tag priority-${goal.priority}\">${goal.priority}</span>
+                                ${goal.dueDate ? `<span class=\"goal-due-date\">${goal.dueDate}</span>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="deleteGoal(this)" class="delete-btn"><i class="fas fa-trash"></i></button>
                     `;
                     goalList.appendChild(div);
                 });
             }
+        }
+        function updateStats() {
+            const goals = document.querySelectorAll('.checkbox-wrapper');
+            const total = goals.length;
+            const completed = document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]:checked').length;
+            const pending = total - completed;
+            document.getElementById('totalGoals').textContent = total;
+            document.getElementById('completedGoals').textContent = completed;
+            document.getElementById('pendingGoals').textContent = pending;
+            const progress = total === 0 ? 0 : (completed / total) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            // Confetti/emoji pop if all goals completed
+            if (total > 0 && completed === total) showConfettiPop();
         }
     </script>
 </body>

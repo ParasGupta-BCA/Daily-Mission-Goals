@@ -2,6 +2,8 @@
 
 Welcome to the **Daily-Mission-Goals** repository! This project helps you set and track daily goals to stay on track and improve productivity.
 
+https://parasgupta-bca.github.io/Daily-Mission-Goals
+
 ## Features:
 - Simple user interface for setting daily missions/goals.
 - Easy-to-use functionality for marking goals as complete.
